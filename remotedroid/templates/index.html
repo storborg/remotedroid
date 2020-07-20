@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RemoteDroid: {{ name }}</title>
+    <link href="/static/favicon.ico" rel="icon" type="image/x-icon">
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <h1>RemoteDroid</h1>
+    <h3>Controlling {{ name }}</h3>
+    {% if serial %}
+      <h3>ADB Serial Number: {{ serial }}
+    {% endif %}
+    <img src="/static/placeholder.png" alt="">
+  </body>
+  <script src="/static/main.js"></script>
+</html>
