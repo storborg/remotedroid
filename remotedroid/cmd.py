@@ -49,11 +49,11 @@ def main(argv=sys.argv):
 
     if opts.verbose:
         if opts.verbose > 1:
-            level = logging.DEBUG
+            level = "DEBUG"
         else:
-            level = logging.INFO
+            level = "INFO"
     else:
-        level = logging.WARNING
+        level = "WARNING"
 
     logging.basicConfig(level=level)
 
@@ -61,4 +61,10 @@ def main(argv=sys.argv):
         name=opts.name or "Anonymous", serial=opts.serial, debug=opts.debug,
     )
 
-    uvicorn.run(app, host=opts.host, port=opts.port)
+    uvicorn.run(
+        app,
+        host=opts.host,
+        port=opts.port,
+        log_level=level.lower(),
+        log_config=None,
+    )

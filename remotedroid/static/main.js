@@ -3,6 +3,7 @@ console.log("hello remotedroid");
 var screenshotWs = new WebSocket("ws://localhost:8080/ws/screenshots");
 var controlWs = new WebSocket("ws://localhost:8080/ws/control");
 var img = document.querySelector("img");
+var body = document.body;
 
 screenshotWs.addEventListener("open", function(event) {
   console.log("connected");
@@ -14,13 +15,60 @@ screenshotWs.addEventListener("message", function(msg) {
   img.src = url;
 });
 
-img.addEventListener("click", function(event) {
-  var x = (event.offsetX / img.width) * img.naturalWidth;
-  var y = (event.offsetY / img.height) * img.naturalHeight;
-  console.log("got a click on the image", x, y);
-  controlWs.send(JSON.stringify({
-    type: "tap",
-    x: x,
-    y: y,
-  }));
+function scaleX(offsetX) {
+  return Math.round((offsetX / img.width) * img.naturalWidth);
+}
+
+function scaleY(offsetY) {
+  return Math.round((offsetY / img.height) * img.naturalHeight);
+}
+
+window.lastMouseDownEvent = null;
+window.lastMouseDownTime = null;
+
+img.addEventListener("mousedown", function(event) {
+  window.lastMouseDownEvent = event;
+  window.lastMouseDownTime = new Date().getTime();
+});
+
+body.addEventListener("mouseup", function(event) {
+  window.lastMouseDownEvent = null;
+  window.lastMouseDownTime = null;
+});
+
+var swipeThreshold = 2;
+
+img.addEventListener("mouseup", function(event) {
+  if (window.lastMouseDownEvent === null) {
+    return;
+  }
+  var elapsed = new Date().getTime() - window.lastMouseDownTime;
+  var x1 = scaleX(window.lastMouseDownEvent.offsetX);
+  var y1 = scaleY(window.lastMouseDownEvent.offsetY);
+  var x2 = scaleX(event.offsetX);
+  var y2 = scaleY(event.offsetY);
+
+  window.lastMouseDownEvent = null;
+  window.lastMouseDownTime = null;
+
+  var moveX = Math.abs(x2 - x1);
+  var moveY = Math.abs(y2 - y1);
+  console.log("mouse " + x1 + " -> " + x2 + ", " + y1 + " -> " + y2);
+
+  var msg = {};
+  if ((moveX > swipeThreshold) || (moveY > swipeThreshold)) {
+    console.log("swipe duration " + elapsed);
+    msg.type = "swipe";
+    msg.x1 = x1;
+    msg.y1 = y1;
+    msg.x2 = x2;
+    msg.y2 = y2;
+    msg.duration = elapsed;
+  } else {
+    console.log("tap");
+    msg.type = "tap";
+    msg.x = x2;
+    msg.y = y2;
+  }
+  controlWs.send(JSON.stringify(msg));
 });

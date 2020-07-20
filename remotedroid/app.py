@@ -44,7 +44,7 @@ class RemoteDroidApp(Starlette):
                 stderr=asyncio.subprocess.PIPE,
             )
             stdout, stderr = await proc.communicate()
-            log.warn("got %d bytes to stdout" % len(stdout))
+            log.debug("pushing screenshot, %d bytes" % len(stdout))
             # push to all connected client queues
             for q in self.screenshot_queues:
                 await q.put(stdout)
@@ -56,13 +56,13 @@ class RemoteDroidApp(Starlette):
         )
 
     async def screenshot_endpoint(self, ws):
+        log.info("New screenshot endpoint connection: %s", ws.client.host)
         await ws.accept()
         try:
             q = asyncio.Queue()
             self.screenshot_queues.add(q)
             while True:
                 img = await q.get()
-                log.warn("sending %d bytes to %s" % (len(img), ws))
                 with open("/tmp/foo.png", "wb") as f:
                     f.write(img)
                 await ws.send_bytes(img)
@@ -71,6 +71,7 @@ class RemoteDroidApp(Starlette):
             await ws.close()
 
     async def handle_input(self, cmd):
+        log.info("Handling control command: %s", cmd)
         proc = await asyncio.create_subprocess_shell(
             "adb shell input " + cmd,
             stdout=asyncio.subprocess.PIPE,
@@ -79,6 +80,7 @@ class RemoteDroidApp(Starlette):
         await proc.communicate()
 
     async def control_endpoint(self, ws):
+        log.info("New control endpoint connection: %s", ws.client.host)
         await ws.accept()
         try:
             while True:
