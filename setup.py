@@ -1,6 +1,9 @@
 from setuptools import setup, find_packages
 
 
+requires = ["starlette", "aiofiles", "jinja2", "uvicorn"]
+
+
 setup(
     name="remotedroid",
     version="0.0.1.dev",
@@ -14,7 +17,7 @@ setup(
     url="https://github.com/storborg/remotedroid",
     author="Scott Torborg",
     author_email="storborg@gmail.com",
-    install_requires=["starlette", "aiofiles", "jinja2", "uvicorn",],
+    install_requires=requires,
     license="MIT",
     packages=find_packages(),
     include_package_data=True,

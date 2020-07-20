@@ -52,7 +52,7 @@ class RemoteDroidApp(Starlette):
     def index_route(self, request):
         return self.templates.TemplateResponse(
             "index.html",
-            {"name": self.name, "serial": self.serial, "request": request,},
+            {"name": self.name, "serial": self.serial, "request": request},
         )
 
     async def screenshot_endpoint(self, ws):
@@ -70,11 +70,34 @@ class RemoteDroidApp(Starlette):
             self.screenshot_queues.remove(q)
             await ws.close()
 
+    async def handle_input(self, cmd):
+        proc = await asyncio.create_subprocess_shell(
+            "adb shell input " + cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        await proc.communicate()
+
     async def control_endpoint(self, ws):
         await ws.accept()
         try:
-            # accept touch commands from here
-            cmd = await ws.receive_json()
-            log.warn("got a command from %s: %s", ws, cmd)
+            while True:
+                # accept touch commands from here
+                msg = await ws.receive_json()
+                if msg["type"] == "tap":
+                    cmd = "tap %s %s" % (msg["x"], msg["y"])
+                elif msg["type"] == "swipe":
+                    cmd = "swipe %s %s %s %s %s" % (
+                        msg["x1"],
+                        msg["y1"],
+                        msg["x2"],
+                        msg["y2"],
+                        msg["duration"],
+                    )
+                else:
+                    raise Exception(
+                        "unrecognized control command type: %s" % cmd["type"]
+                    )
+                await self.handle_input(cmd)
         finally:
             await ws.close()

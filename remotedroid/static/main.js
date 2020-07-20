@@ -9,10 +9,18 @@ screenshotWs.addEventListener("open", function(event) {
 });
 
 screenshotWs.addEventListener("message", function(msg) {
-  console.log("got from server: ", msg.data);
   var blob = msg.data.slice(0, msg.data.size, "image/png");
   var url = URL.createObjectURL(blob);
-  console.log("url: ", url);
   img.src = url;
-  console.log("done");
+});
+
+img.addEventListener("click", function(event) {
+  var x = (event.offsetX / img.width) * img.naturalWidth;
+  var y = (event.offsetY / img.height) * img.naturalHeight;
+  console.log("got a click on the image", x, y);
+  controlWs.send(JSON.stringify({
+    type: "tap",
+    x: x,
+    y: y,
+  }));
 });

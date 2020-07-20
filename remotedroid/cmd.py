@@ -23,10 +23,15 @@ def main(argv=sys.argv):
         help="Android serial to pass to adb (if multiple devices connected)",
     )
     p.add_argument(
-        "--host", default="0.0.0.0", help="Host/address that webserver will bind to",
+        "--host",
+        default="0.0.0.0",
+        help="Host/address that webserver will bind to",
     )
     p.add_argument(
-        "--port", type=int, default=8080, help="Port that webserver will listen on",
+        "--port",
+        type=int,
+        default=8080,
+        help="Port that webserver will listen on",
     )
     p.add_argument(
         "-v",
