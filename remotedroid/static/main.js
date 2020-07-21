@@ -1,7 +1,20 @@
 console.log("hello remotedroid");
 
-var screenshotWs = new WebSocket("ws://localhost:8080/ws/screenshots");
-var controlWs = new WebSocket("ws://localhost:8080/ws/control");
+function qualifyWebSocketURL(path) {
+  url = new URL(window.location.href);
+  var protocol;
+  if (url.protocol === "http:") {
+    protocol = "ws:";
+  } else {
+    protocol = "wss:";
+  }
+
+  var apiBase = protocol + "//" + url.host + url.pathname;
+  return new String(new URL(path, apiBase));
+}
+
+var screenshotWs = new WebSocket(qualifyWebSocketURL("/ws/screenshots"));
+var controlWs = new WebSocket(qualifyWebSocketURL("/ws/control"));
 var img = document.querySelector("img");
 var body = document.body;
 
