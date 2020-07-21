@@ -23,32 +23,36 @@ function scaleY(offsetY) {
   return Math.round((offsetY / img.height) * img.naturalHeight);
 }
 
-window.lastMouseDownEvent = null;
+window.lastMouseDownOffsetX = null;
+window.lastMouseDownOffsetY = null;
 window.lastMouseDownTime = null;
 
 img.addEventListener("mousedown", function(event) {
-  window.lastMouseDownEvent = event;
+  window.lastMouseDownOffsetX = event.offsetX;
+  window.lastMouseDownOffsetY = event.offsetY;
   window.lastMouseDownTime = new Date().getTime();
 });
 
 body.addEventListener("mouseup", function(event) {
-  window.lastMouseDownEvent = null;
+  window.lastMouseDownOffsetX = null;
+  window.lastMouseDownOffsetY = null;
   window.lastMouseDownTime = null;
 });
 
 var swipeThreshold = 2;
 
 img.addEventListener("mouseup", function(event) {
-  if (window.lastMouseDownEvent === null) {
+  if (window.lastMouseDownTime === null) {
     return;
   }
   var elapsed = new Date().getTime() - window.lastMouseDownTime;
-  var x1 = scaleX(window.lastMouseDownEvent.offsetX);
-  var y1 = scaleY(window.lastMouseDownEvent.offsetY);
+  var x1 = scaleX(window.lastMouseDownOffsetX);
+  var y1 = scaleY(window.lastMouseDownOffsetY);
   var x2 = scaleX(event.offsetX);
   var y2 = scaleY(event.offsetY);
 
-  window.lastMouseDownEvent = null;
+  window.lastMouseDownOffsetX = null;
+  window.lastMouseDownOffsetY = null;
   window.lastMouseDownTime = null;
 
   var moveX = Math.abs(x2 - x1);
