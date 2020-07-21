@@ -3,6 +3,11 @@ import logging
 import sys
 import argparse
 
+try:
+    import coloredlogs
+except ImportError:
+    coloredlogs = None
+
 import uvicorn
 
 from .app import RemoteDroidApp
@@ -55,7 +60,10 @@ def main(argv=sys.argv):
     else:
         level = "WARNING"
 
-    logging.basicConfig(level=level)
+    if coloredlogs:
+        coloredlogs.install(level=level)
+    else:
+        logging.basicConfig(level=level)
 
     app = RemoteDroidApp(
         name=opts.name or "Anonymous", serial=opts.serial, debug=opts.debug,
