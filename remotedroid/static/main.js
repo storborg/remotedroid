@@ -23,17 +23,17 @@ screenshotWs.addEventListener("open", function(event) {
 });
 
 screenshotWs.addEventListener("message", function(msg) {
-  var blob = msg.data.slice(0, msg.data.size, "image/png");
+  var blob = msg.data.slice(0, msg.data.size, "image/jpeg");
   var url = URL.createObjectURL(blob);
   img.src = url;
 });
 
 function scaleX(offsetX) {
-  return Math.round((offsetX / img.width) * img.naturalWidth);
+  return Math.round((offsetX / img.width) * 1440);
 }
 
 function scaleY(offsetY) {
-  return Math.round((offsetY / img.height) * img.naturalHeight);
+  return Math.round((offsetY / img.height) * 2960);
 }
 
 window.lastMouseDownOffsetX = null;

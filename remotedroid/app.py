@@ -1,9 +1,11 @@
 import logging
 
+import io
 import time
 import asyncio
 import pkg_resources
 
+from PIL import Image
 from starlette.applications import Starlette
 from starlette.templating import Jinja2Templates
 from starlette.routing import Route, WebSocketRoute, Mount
@@ -38,18 +40,36 @@ class RemoteDroidApp(Starlette):
         self.add_event_handler("startup", startup_handler)
 
     async def screenshot_task(self):
+        scale = 0.5
+        width = int(1440 * scale)
+        height = int(2960 * scale)
+        cmd = [
+            "adb shell screenrecord",
+            "--size=%dx%d" % (width, height),
+            "--output-format=raw-frames -",
+        ]
+        cmd = " ".join(cmd)
+
+        proc = await asyncio.create_subprocess_shell(
+            cmd, stdout=asyncio.subprocess.PIPE,
+        )
+        bytes_per_frame = width * height * 3
         last_time = time.perf_counter()
         while True:
-            proc = await asyncio.create_subprocess_shell(
-                "adb shell screencap -p",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+            buf = await proc.stdout.readexactly(bytes_per_frame)
+            compression_start = time.perf_counter()
+            image = Image.frombytes("RGB", (width, height), buf, "raw")
+            output = io.BytesIO()
+            image.save(output, format="JPEG")
+            outbuf = output.getvalue()
+            compression_elapsed = time.perf_counter() - compression_start
+            log.warn(
+                "compressed image in %0.2f ms", compression_elapsed * 1000
             )
-            stdout, stderr = await proc.communicate()
-            log.debug("pushing screenshot, %d bytes" % len(stdout))
+            log.debug("pushing screenshot, %d bytes" % len(outbuf))
             # push to all connected client queues
             for q in self.screenshot_queues:
-                await q.put(stdout)
+                await q.put(outbuf)
             now = time.perf_counter()
             elapsed = now - last_time
             last_time = now
