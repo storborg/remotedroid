@@ -1,5 +1,6 @@
 import logging
 
+import time
 import asyncio
 import pkg_resources
 
@@ -37,6 +38,7 @@ class RemoteDroidApp(Starlette):
         self.add_event_handler("startup", startup_handler)
 
     async def screenshot_task(self):
+        last_time = time.perf_counter()
         while True:
             proc = await asyncio.create_subprocess_shell(
                 "adb shell screencap -p",
@@ -48,6 +50,10 @@ class RemoteDroidApp(Starlette):
             # push to all connected client queues
             for q in self.screenshot_queues:
                 await q.put(stdout)
+            now = time.perf_counter()
+            elapsed = now - last_time
+            last_time = now
+            log.info("perf %0.1f fps", 1 / elapsed)
 
     def index_route(self, request):
         return self.templates.TemplateResponse(
