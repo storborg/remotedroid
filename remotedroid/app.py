@@ -94,6 +94,7 @@ class RemoteDroidApp(Starlette):
                 msg = await ws.receive_json()
                 if msg["type"] == "tap":
                     cmd = "tap %s %s" % (msg["x"], msg["y"])
+                    await self.handle_input(cmd)
                 elif msg["type"] == "swipe":
                     cmd = "swipe %s %s %s %s %s" % (
                         msg["x1"],
@@ -102,10 +103,15 @@ class RemoteDroidApp(Starlette):
                         msg["y2"],
                         msg["duration"],
                     )
+                    await self.handle_input(cmd)
+                elif msg["type"] == "unlock":
+                    # type passcode
+                    await self.handle_input("text 0000")
+                    # press enter
+                    await self.handle_input("keyevent 66")
                 else:
                     raise Exception(
                         "unrecognized control command type: %s" % cmd["type"]
                     )
-                await self.handle_input(cmd)
         finally:
             await ws.close()

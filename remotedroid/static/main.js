@@ -89,3 +89,8 @@ img.addEventListener("mouseup", function(event) {
   }
   controlWs.send(JSON.stringify(msg));
 });
+
+document.querySelector(".btn-unlock").addEventListener("click", function(event) {
+  console.log("unlock");
+  controlWs.send(JSON.stringify({"type": "unlock"}));
+});

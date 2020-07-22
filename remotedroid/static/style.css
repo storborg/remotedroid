@@ -7,3 +7,7 @@ body {
 img {
     max-width: 360px;
 }
+
+.controls {
+    margin-top: 50px;
+}
