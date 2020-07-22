@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-requires = ["starlette", "aiofiles", "jinja2", "uvicorn"]
+requires = ["starlette", "aiofiles", "jinja2", "uvicorn", "Pillow"]
 
 
 setup(
